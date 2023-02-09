@@ -1,22 +1,27 @@
 <script setup lang="ts">
-import { marked } from 'marked'
-import { debounce } from 'lodash-es'
-import { ref, computed } from 'vue';
+import { ref } from 'vue'
 
-const input = ref('# hello')
+const meat = ref('')
 
-const output = computed(() => marked(input.value))
+const vegetable = ref('')
 
-const update = debounce((e: any) => {
-    input.value = e.target.value
-}, 100)
+const spices = ref('')
+
+const process = ref([])
 </script>
 
 <template>
-    <div class="editor">
-        <textarea class="input" :value="input" @input="update">
-        </textarea>
-        <div class="output" v-html="output"></div>
+    <div class="show">
+        <div class="materials">
+            <p class="meat">{{ meat }}</p>
+            <p class="vegetable">{{ vegetable }}</p>
+            <p class="spices">{{ spices }}</p>
+        </div>
+        <div class="process">
+            <li v-for="(item, index) in process" :key="index">
+                {{ item }}
+            </li>
+        </div>
     </div>
 </template>
 
