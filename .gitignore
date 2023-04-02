@@ -158,3 +158,5 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+.idea/misc.xml
+.idea/WhatForToday.iml
