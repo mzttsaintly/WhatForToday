@@ -20,10 +20,6 @@ class Dishes(db.Model):
     operate = db.Column(db.JSON)
     tips = db.Column(db.JSON)
 
-    def to_json(self):
-        sdict = self.__dict__
-
-
 
 with app.app_context():
     db.create_all()
@@ -53,8 +49,7 @@ def add_dishes():
 @app.route("/query_material", methods=['POST'])
 def query_dishes_by_material():
     # 查询条件
-    material_in_dishes = request.json.get('material_in_dishes')
-    # quantity_in_dishes = request.json.get('quantity_in_dishes')
+    # material = request.json.get('material')
     dishes = db.session.execute(db.select(Dishes).order_by(Dishes.material)).first()
-    logger.debug(str(dishes))
-    return jsonify(dishes)
+    res = dishes.Row._mapping()
+    return jsonify(res)
