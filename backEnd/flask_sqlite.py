@@ -5,8 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from loguru import logger
 import os
 
-from sqlalchemy.engine.row import Row
-
 basedir = os.path.abspath(os.path.dirname(__name__))
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "backEnd", "dishes.db")
@@ -89,6 +87,7 @@ def query_dishes_by_material_all():
     res = []
     for i in dishes_list:
         res.append({
+            "id": i.id,
             "name": i.name,
             "material": i.material,
             "quantity": i.quantity,
@@ -104,6 +103,20 @@ def query_dishes_by_name():
     t = f"%{dishes_name}%"
     logger.debug(t)
     dishes = db.first_or_404(db.select(Dishes).filter(Dishes.name.like(t)), description="找不到该菜式")
+    res = {"name": dishes.name,
+           "material": dishes.material,
+           "quantity": dishes.quantity,
+           "operate": dishes.operate,
+           "tips": dishes.tips}
+    return jsonify(res)
+
+
+@app.route("/query_id", methods=['POST'])
+def query_dishes_by_id():
+    dishes_id = request.json.get('id')
+    t = int(dishes_id)
+    logger.debug(t)
+    dishes = db.get_or_404(Dishes, t, description="找不到该菜式")
     res = {"name": dishes.name,
            "material": dishes.material,
            "quantity": dishes.quantity,
