@@ -1,55 +1,162 @@
-import json
-from json import JSONEncoder
+# -*- coding: utf-8 -*-
+from sqlalchemy.exc import IntegrityError
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from loguru import logger
 import os
+import json
+
+basedir = os.path.abspath(os.path.dirname(__name__))
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + \
+    os.path.join(basedir, "backEnd", "dishes.db")
+logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
+app.config["JSON_AS_ASCII"] = False
+app.config["SQLALCHEMY_ECHO"] = True
+db = SQLAlchemy()
+db.init_app(app)
 
 
-class Dish:
-    def __int__(self, name, kind, time, practice):
-        self.name = name
-        self.kind = kind
-        self.time = time
-        self.practice = practice
-
-    def show_practice(self):
-        return self.practice
-
-
-class DishEncoder(JSONEncoder):
-    def default(self, o):
-        return o.__dict__
+class Dishes(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, unique=True)
+    # 没有必要使用JSON，没有这个存储需求
+    # material = db.Column(db.JSON)
+    # quantity = db.Column(db.JSON)
+    # operate = db.Column(db.JSON)
+    # tips = db.Column(db.JSON)
+    material = db.Column(db.String)
+    quantity = db.Column(db.String)
+    operate = db.Column(db.String)
+    tips = db.Column(db.String)
 
 
-def choose_dish(num: int):
-    pass
+with app.app_context():
+    db.create_all()
+    logger.debug("正在创建表")
 
 
-def add_dishes(dish_name: str, kind: str, practice: str):
-    # 读取json文件中的数据
-    item_list = []
-    with open('dishes.json', 'r', encoding='UTF-8') as f:
-        load_dict = json.load(f)
-        num_item = len(load_dict)
-        if num_item != 0:
-            for i in range(num_item):
-                temp_dish = load_dict[i]['dish_name']
-                temp_kind = load_dict[i]['kind']
-                temp_practice = load_dict[i]['practice']
-                temp_item = {'dish_name': temp_dish, 'kind': temp_kind, 'practice': temp_practice}
-                item_list.append(temp_item)
-    # 在末尾添加本次新增的菜式
-    new_item = {'dish_name': dish_name, 'kind': kind, 'practice': practice}
-    item_list.append(new_item)
-    with open('dishes.json', 'w', encoding='UTF-8') as f:
-        json.dump(item_list, f, ensure_ascii=False)
+@app.route("/")
+def hello():
+    return "<a href=‘http://127.0.0.1:5000/add_dishes’>this</a>"
 
 
-def alter_dish():
-    pass
+@app.route("/add_dishes", methods=['POST'])
+def add_dishes():
+    # 接受数据
+    name = request.json.get('name')
+    material = request.json.get('material')
+    quantity = request.json.get('quantity')
+    operate = request.json.get('operate')
+    tips = request.json.get('tips')
+
+    # 写入
+    try:
+        db.session.add(Dishes(name=name, material=material,
+                       quantity=quantity, operate=operate, tips=tips))
+        db.session.commit()
+        res = jsonify(name=name, material=material,
+                      quantity=quantity, operate=operate, tips=tips)
+        logger.debug(res)
+    except IntegrityError:
+        return "不可插入重复的条目，请先删除旧条目"
+    return res
 
 
-if __name__ == "__main__":
-    print("分开输入菜品名字，种类，制作方法")
-    input_name = input()
-    input_kind = input()
-    input_practice = input()
-    add_dishes(input_name, input_kind, input_practice)
+@app.route("/query_material", methods=['POST', 'GET'])
+def query_dishes_by_material():
+    # 查询条件
+    if request.method == 'POST':
+        material = request.json.get('material')
+        
+    else:
+        material = request.args.get('material')
+    t = f"%{material}%"
+    # first_or_404: 返回第一个对象，若找不到则返回404，参数为查询语句
+    # filter：不可组合查询，需连续调用filter函数
+    dishes = db.first_or_404(db.select(Dishes).filter(
+        Dishes.material.like(t)), description="找不到该菜式")
+    res = {"name": dishes.name,
+           "material": dishes.material,
+           "quantity": dishes.quantity,
+           "operate": dishes.operate,
+           "tips": dishes.tips}
+
+    return jsonify(res)
+
+
+@app.route("/query_material_all/", methods=['GET', 'POST'])
+def query_dishes_by_material_all():
+    # 查询条件
+    if request.method == 'POST':
+        material = request.json.get('material')
+        
+    else:
+        material = request.args.get('material')
+    t = f"%{material}%"
+    # first_or_404: 返回第一个对象，若找不到则返回404，参数为查询语句
+    # filter：不可组合查询，需连续调用filter函数
+    dishes_list = db.session.execute(
+        db.select(Dishes).filter(Dishes.material.like(t))).scalars()
+    res = []
+    for i in dishes_list:
+        res.append({
+            "id": i.id,
+            "name": i.name,
+            "material": i.material,
+            "quantity": i.quantity,
+            "operate": i.operate,
+            "tips": i.tips
+        })
+    return jsonify(res)
+
+
+@app.route("/query_name", methods=['POST', 'GET'])
+def query_dishes_by_name():
+    if request.method == 'POST':
+        dishes_name = request.json.get('name')
+        
+    else:
+        dishes_name = request.args.get('name')
+    
+    t = f"%{dishes_name}%"
+    logger.debug(t)
+    dishes = db.first_or_404(db.select(Dishes).filter(
+        Dishes.name.like(t)), description="找不到该菜式")
+    res = {"name": dishes.name,
+           "material": dishes.material,
+           "quantity": dishes.quantity,
+           "operate": dishes.operate,
+           "tips": dishes.tips}
+    return jsonify(res)
+
+
+@app.route("/query_id", methods=['POST', 'GET'])
+def query_dishes_by_id():
+    if request.method == 'POST':
+        dishes_id = request.json.get('id')
+        
+    else:
+        dishes_id = request.args.get('id')
+    
+    t = int(dishes_id)
+    logger.debug(t)
+    dishes = db.get_or_404(Dishes, t, description="找不到该菜式")
+    res = {"name": dishes.name,
+           "material": dishes.material,
+           "quantity": dishes.quantity,
+           "operate": dishes.operate,
+           "tips": dishes.tips}
+    return jsonify(res)
+
+
+@app.route("/del", methods=['POST'])
+def del_by_name():
+    dishes_name = request.json.get('name')
+    t = f"{dishes_name}"
+    logger.debug(t)
+    dishes = db.first_or_404(db.select(Dishes).filter(
+        Dishes.name == t), description="找不到该菜式")
+    db.session.delete(dishes)
+    db.session.commit()
+    return "已删除"
