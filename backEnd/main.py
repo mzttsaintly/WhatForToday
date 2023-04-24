@@ -20,15 +20,19 @@ db.init_app(app)
 class Dishes(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String, unique=True)
-    # 没有必要使用JSON，没有这个存储需求
-    # material = db.Column(db.JSON)
-    # quantity = db.Column(db.JSON)
-    # operate = db.Column(db.JSON)
-    # tips = db.Column(db.JSON)
     material = db.Column(db.String)
     quantity = db.Column(db.String)
     operate = db.Column(db.String)
     tips = db.Column(db.String)
+
+
+def dish_to_json(dishes: Dishes):
+    res = {"name": dishes.name,
+           "material": dishes.material,
+           "quantity": dishes.quantity,
+           "operate": dishes.operate,
+           "tips": dishes.tips}
+    return jsonify(res)
 
 
 with app.app_context():
@@ -76,13 +80,9 @@ def query_dishes_by_material():
     # filter：不可组合查询，需连续调用filter函数
     dishes = db.first_or_404(db.select(Dishes).filter(
         Dishes.material.like(t)), description="找不到该菜式")
-    res = {"name": dishes.name,
-           "material": dishes.material,
-           "quantity": dishes.quantity,
-           "operate": dishes.operate,
-           "tips": dishes.tips}
+    res = dish_to_json(dishes)
 
-    return jsonify(res)
+    return res
 
 
 @app.route("/query_material_all/", methods=['GET', 'POST'])
@@ -100,15 +100,8 @@ def query_dishes_by_material_all():
         db.select(Dishes).filter(Dishes.material.like(t))).scalars()
     res = []
     for i in dishes_list:
-        res.append({
-            "id": i.id,
-            "name": i.name,
-            "material": i.material,
-            "quantity": i.quantity,
-            "operate": i.operate,
-            "tips": i.tips
-        })
-    return jsonify(res)
+        res.append(dish_to_json(i))
+    return res
 
 
 @app.route("/query_name", methods=['POST', 'GET'])
@@ -123,12 +116,8 @@ def query_dishes_by_name():
     logger.debug(t)
     dishes = db.first_or_404(db.select(Dishes).filter(
         Dishes.name.like(t)), description="找不到该菜式")
-    res = {"name": dishes.name,
-           "material": dishes.material,
-           "quantity": dishes.quantity,
-           "operate": dishes.operate,
-           "tips": dishes.tips}
-    return jsonify(res)
+    res = dish_to_json(dishes)
+    return res
 
 
 @app.route("/query_id", methods=['POST', 'GET'])
@@ -142,12 +131,16 @@ def query_dishes_by_id():
     t = int(dishes_id)
     logger.debug(t)
     dishes = db.get_or_404(Dishes, t, description="找不到该菜式")
-    res = {"name": dishes.name,
-           "material": dishes.material,
-           "quantity": dishes.quantity,
-           "operate": dishes.operate,
-           "tips": dishes.tips}
-    return jsonify(res)
+    res = dish_to_json(dishes)
+    return res
+
+@app.route("/random")
+def random_dish():
+    logger.debug("准备随机条目")
+    dishes = db.first_or_404(db.select(Dishes).order_by(db.func.random()).limit(1))
+    logger.debug(str(dishes))
+    res = dish_to_json(dishes)
+    return res
 
 
 @app.route("/del", methods=['POST'])
