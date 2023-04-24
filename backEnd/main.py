@@ -85,7 +85,7 @@ def query_dishes_by_material():
     return res
 
 
-@app.route("/query_material_all/", methods=['GET', 'POST'])
+@app.route("/query_material_all", methods=['GET', 'POST'])
 def query_dishes_by_material_all():
     # 查询条件
     if request.method == 'POST':
@@ -94,14 +94,22 @@ def query_dishes_by_material_all():
     else:
         material = request.args.get('material')
     t = f"%{material}%"
+    logger.debug(t)
     # first_or_404: 返回第一个对象，若找不到则返回404，参数为查询语句
     # filter：不可组合查询，需连续调用filter函数
     dishes_list = db.session.execute(
         db.select(Dishes).filter(Dishes.material.like(t))).scalars()
     res = []
     for i in dishes_list:
-        res.append(dish_to_json(i))
-    return res
+        res.append(
+                {
+            "name": i.name,
+            "material": i.material,
+            "quantity": i.quantity,
+            "operate": i.operate,
+            "tips": i.tips}
+        )
+    return jsonify(res)
 
 
 @app.route("/query_name", methods=['POST', 'GET'])
@@ -133,6 +141,26 @@ def query_dishes_by_id():
     dishes = db.get_or_404(Dishes, t, description="找不到该菜式")
     res = dish_to_json(dishes)
     return res
+
+@app.route("/query_tips", methods=['POST', 'GET'])
+def query_dishes_by_tips():
+    if request.method == 'POST':
+        dishes_tips = request.json.get('tips')
+    else:
+        dishes_tips = request.args.get('tips')
+    dishes_list = db.session.execute(
+        db.select(Dishes).filter(Dishes.tips.like(dishes_tips))).scalars()
+    res = []
+    for i in dishes_list:
+        res.append(
+                {
+            "name": i.name,
+            "material": i.material,
+            "quantity": i.quantity,
+            "operate": i.operate,
+            "tips": i.tips}
+        )
+    return jsonify(res)
 
 @app.route("/random")
 def random_dish():
