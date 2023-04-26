@@ -4,12 +4,11 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from loguru import logger
 import os
-import json
 
 basedir = os.path.abspath(os.path.dirname(__name__))
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + \
-    os.path.join(basedir, "backEnd", "dishes.db")
+                                        os.path.join(basedir, "backEnd", "dishes.db")
 logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
 app.config["JSON_AS_ASCII"] = False
 app.config["SQLALCHEMY_ECHO"] = True
@@ -57,7 +56,7 @@ def add_dishes():
     # 写入
     try:
         db.session.add(Dishes(name=name, material=material,
-                       quantity=quantity, operate=operate, tips=tips))
+                              quantity=quantity, operate=operate, tips=tips))
         db.session.commit()
         res = jsonify(name=name, material=material,
                       quantity=quantity, operate=operate, tips=tips)
@@ -72,7 +71,7 @@ def query_dishes_by_material():
     # 查询条件
     if request.method == 'POST':
         material = request.json.get('material')
-        
+
     else:
         material = request.args.get('material')
     t = f"%{material}%"
@@ -90,7 +89,7 @@ def query_dishes_by_material_all():
     # 查询条件
     if request.method == 'POST':
         material = request.json.get('material')
-        
+
     else:
         material = request.args.get('material')
     t = f"%{material}%"
@@ -102,12 +101,12 @@ def query_dishes_by_material_all():
     res = []
     for i in dishes_list:
         res.append(
-                {
-            "name": i.name,
-            "material": i.material,
-            "quantity": i.quantity,
-            "operate": i.operate,
-            "tips": i.tips}
+            {
+                "name": i.name,
+                "material": i.material,
+                "quantity": i.quantity,
+                "operate": i.operate,
+                "tips": i.tips}
         )
     return jsonify(res)
 
@@ -116,10 +115,10 @@ def query_dishes_by_material_all():
 def query_dishes_by_name():
     if request.method == 'POST':
         dishes_name = request.json.get('name')
-        
+
     else:
         dishes_name = request.args.get('name')
-    
+
     t = f"%{dishes_name}%"
     logger.debug(t)
     dishes = db.first_or_404(db.select(Dishes).filter(
@@ -132,15 +131,16 @@ def query_dishes_by_name():
 def query_dishes_by_id():
     if request.method == 'POST':
         dishes_id = request.json.get('id')
-        
+
     else:
         dishes_id = request.args.get('id')
-    
+
     t = int(dishes_id)
     logger.debug(t)
     dishes = db.get_or_404(Dishes, t, description="找不到该菜式")
     res = dish_to_json(dishes)
     return res
+
 
 @app.route("/query_tips", methods=['POST', 'GET'])
 def query_dishes_by_tips():
@@ -148,19 +148,21 @@ def query_dishes_by_tips():
         dishes_tips = request.json.get('tips')
     else:
         dishes_tips = request.args.get('tips')
+    dishes_tips = f'%{dishes_tips}%'
     dishes_list = db.session.execute(
         db.select(Dishes).filter(Dishes.tips.like(dishes_tips))).scalars()
     res = []
     for i in dishes_list:
         res.append(
-                {
-            "name": i.name,
-            "material": i.material,
-            "quantity": i.quantity,
-            "operate": i.operate,
-            "tips": i.tips}
+            {
+                "name": i.name,
+                "material": i.material,
+                "quantity": i.quantity,
+                "operate": i.operate,
+                "tips": i.tips}
         )
     return jsonify(res)
+
 
 @app.route("/random")
 def random_dish():
