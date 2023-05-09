@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import display from './components/display_.vue'
+import addDish from './components/addDish.vue'
 </script>
 
 <template>
@@ -13,7 +14,7 @@ import display from './components/display_.vue'
     </div>
   </header>
   <display />
-
+  <addDish />
   <RouterView />
 </template>
 
