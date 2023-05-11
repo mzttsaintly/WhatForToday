@@ -1,7 +1,6 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import axios from "axios";
-axios.defaults.baseURL = '/api'
 const test_url = ref('http://127.0.0.1:5000/add_dishes')
 const new_name = ref("")
 const new_material = ref("")
@@ -18,8 +17,27 @@ const new_dish = reactive({
 })
 
 function submit_dish() {
-    const res = axios.post('http://127.0.0.1:5000/add_dishes', new_dish)
-    console.log(res)
+    axios.post(test_url.value, new_dish).then(function (res) {
+        console.log(res)
+    })
+    
+}
+
+const new_material_array = reactive([{data:""}])
+const new_quantity_array = reactive({})
+const new_operate_array = reactive({})
+const new_tips_array = reactive({})
+
+
+function delete_material_input(item) {
+    if (new_material_array.length<=1) {
+        return false;
+    }
+    new_material_array.splice(new_material_array.indexOf(item), 1)
+}
+
+function add_material_input() {
+    this.new_material_array.push({data:""})
 }
 </script>
 
@@ -59,4 +77,12 @@ function submit_dish() {
             <input type="button" class="submit" value="提交" @click="submit_dish">
         </div>
     </form>
+
+    <div class="new">
+        <div class="material" v-for="item in new_material_array" :key="item.id">
+            <el-input type="input" placeholder="输入所需材料" v-model="item.data"></el-input>
+            <el-button type="danger" @click="delete_material_input(item)">-</el-button>
+        </div>
+        <el-button type="primary" @click="add_material_input()">+</el-button>
+    </div>
 </template>

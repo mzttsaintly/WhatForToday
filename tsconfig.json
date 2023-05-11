@@ -13,5 +13,8 @@
   ],
   "include": [
     "env.d.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "types": ["element-plus/global"]
+  }
 }

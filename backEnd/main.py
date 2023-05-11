@@ -2,11 +2,13 @@
 from sqlalchemy.exc import IntegrityError
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 from loguru import logger
 import os
 
 basedir = os.path.abspath(os.path.dirname(__name__))
 app = Flask(__name__)
+cors = CORS(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + \
                                         os.path.join(basedir, "backEnd", "dishes.db")
 logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
