@@ -8,6 +8,10 @@ const new_quantity = ref("")
 const new_operate = ref("")
 const new_tips = ref("")
 
+const vFocus = {
+  mounted: (el) => el.focus()
+}
+
 const new_dish = reactive({
     "name": new_name,
     "material": new_material,
@@ -28,7 +32,7 @@ const new_quantity_array = reactive({})
 const new_operate_array = reactive({})
 const new_tips_array = reactive({})
 
-
+// 材料栏
 function delete_material_input(item) {
     if (new_material_array.length<=1) {
         return false;
@@ -38,6 +42,15 @@ function delete_material_input(item) {
 
 function add_material_input() {
     this.new_material_array.push({data:""})
+}
+
+function merge_material() {
+    let msg = ""
+    for (let m of new_material_array) {
+        msg += m.data;
+    }
+    console.log(msg)
+    return msg
 }
 </script>
 
@@ -80,9 +93,10 @@ function add_material_input() {
 
     <div class="new">
         <div class="material" v-for="item in new_material_array" :key="item.id">
-            <el-input type="input" placeholder="输入所需材料" v-model="item.data"></el-input>
+            <el-input type="input" placeholder="输入所需材料" v-model="item.data" v-focus></el-input>
             <el-button type="danger" @click="delete_material_input(item)">-</el-button>
         </div>
         <el-button type="primary" @click="add_material_input()">+</el-button>
+        <el-button type="success" @click="merge_material">提交</el-button>
     </div>
 </template>
