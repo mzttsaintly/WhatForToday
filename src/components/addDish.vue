@@ -8,8 +8,16 @@ const new_quantity = ref("")
 const new_operate = ref("")
 const new_tips = ref("")
 
-const vFocus = {
-  mounted: (el) => el.focus()
+// const vFocus = {
+//   mounted: (el) => el.focus()
+// }
+
+const myfocus = {
+    mounted: (el, binding) => {
+        if (binding.value === true || binding.value === undefined) {
+            el.focus()
+    }
+}
 }
 
 const new_dish = reactive({
@@ -51,6 +59,7 @@ function merge_material() {
         msg += ';'
     }
     console.log(msg)
+    // new_material = msg;
     return msg
 }
 </script>
@@ -94,7 +103,7 @@ function merge_material() {
 
     <div class="new">
         <div class="material" v-for="item in new_material_array" :key="item.id">
-            <el-input type="input" placeholder="输入所需材料" v-model="item.data" v-focus></el-input>
+            <el-input type="input" placeholder="输入所需材料" v-model="item.data" v-myfocus="true"></el-input>
             <el-button type="danger" @click="delete_material_input(item)">-</el-button>
         </div>
         <el-button type="primary" @click="add_material_input()">+</el-button>
