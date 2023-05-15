@@ -48,6 +48,7 @@ function merge_material() {
     let msg = ""
     for (let m of new_material_array) {
         msg += m.data;
+        msg += ';'
     }
     console.log(msg)
     return msg
