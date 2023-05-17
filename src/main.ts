@@ -8,6 +8,14 @@ import './assets/main.css'
 
 const app = createApp(App)
 
+app.directive('myfocus', {
+    mounted: (el, binding) => {
+        if (binding.value == true || binding.value == undefined) {
+            el.focus()
+        }
+    }
+})
+
 app.use(router)
 
 app.use(ElementPlus)

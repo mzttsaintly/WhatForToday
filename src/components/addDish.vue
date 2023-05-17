@@ -8,8 +8,21 @@ const new_quantity = ref("")
 const new_operate = ref("")
 const new_tips = ref("")
 
+<<<<<<< HEAD
 const vFocus = {
     mounted: (el) => el.focus()
+=======
+// const vFocus = {
+//   mounted: (el) => el.focus()
+// }
+
+const myfocus = {
+    mounted: (el, binding) => {
+        if (binding.value === true || binding.value === undefined) {
+            el.focus()
+    }
+}
+>>>>>>> 06589f81002c92ee35667473782d21bb89f34f78
 }
 
 const new_dish = reactive({
@@ -144,6 +157,7 @@ function post_button() {
     </form>
 
     <div class="new">
+<<<<<<< HEAD
         <div class="material-div">
             <div class="kuangkuang" v-for="item in new_material_and_quantity_array" :key="item.id">
                 <el-input type="input" placeholder="输入所需材料" v-model="item.material_name"></el-input>
@@ -152,6 +166,11 @@ function post_button() {
             </div>
             <el-button class="add_button" type="primary" @click="add_material_input()">+</el-button>
             
+=======
+        <div class="material" v-for="item in new_material_array" :key="item.id">
+            <el-input type="input" placeholder="输入所需材料" v-model="item.data" v-myfocus="true"></el-input>
+            <el-button type="danger" @click="delete_material_input(item)">-</el-button>
+>>>>>>> 06589f81002c92ee35667473782d21bb89f34f78
         </div>
 
         <div class="operate-div">
