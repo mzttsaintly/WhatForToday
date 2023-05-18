@@ -2,45 +2,25 @@
 import { ref, reactive } from 'vue'
 import axios from "axios";
 const test_url = ref('http://127.0.0.1:5000/add_dishes')
-const new_name = ref("")
-const new_material = ref("")
-const new_quantity = ref("")
-const new_operate = ref("")
-const new_tips = ref("")
 
-<<<<<<< HEAD
-const vFocus = {
-    mounted: (el) => el.focus()
-=======
-// const vFocus = {
-//   mounted: (el) => el.focus()
+const new_name = ref("")
+
+// const new_dish = reactive({
+//     "name": new_name,
+//     "material": new_material,
+//     "quantity": new_quantity,
+//     "operate": new_operate,
+//     "tips": new_tips
+// })
+
+// function submit_dish() {
+//     axios.post(test_url.value, new_dish).then(function (res) {
+//         console.log(res)
+//     })
+
 // }
 
-const myfocus = {
-    mounted: (el, binding) => {
-        if (binding.value === true || binding.value === undefined) {
-            el.focus()
-    }
-}
->>>>>>> 06589f81002c92ee35667473782d21bb89f34f78
-}
-
-const new_dish = reactive({
-    "name": new_name,
-    "material": new_material,
-    "quantity": new_quantity,
-    "operate": new_operate,
-    "tips": new_tips
-})
-
-function submit_dish() {
-    axios.post(test_url.value, new_dish).then(function (res) {
-        console.log(res)
-    })
-
-}
-
-const new_material_and_quantity_array = reactive([{ material_name: "", material_quantity:"" }])
+const new_material_and_quantity_array = reactive([{ material_name: "", material_quantity: "" }])
 const new_operate_array = reactive([{ data: "" }])
 const new_tips_array = reactive([{ data: "" }])
 
@@ -53,7 +33,7 @@ function delete_material_input(item) {
 }
 
 function add_material_input() {
-    this.new_material_and_quantity_array.push({ material_name: "", material_quantity:"" })
+    this.new_material_and_quantity_array.push({ material_name: "", material_quantity: "" })
 }
 
 function merge_material() {
@@ -67,6 +47,7 @@ function merge_material() {
     }
     console.log("material:" + msg_m)
     console.log("quantity:" + msg_q)
+    return [msg_m, msg_q]
 }
 
 // 操作栏
@@ -78,7 +59,7 @@ function delete_operate_input(item) {
 }
 
 function add_operate_input() {
-    this.new_operate_array.push({ data:"" })
+    this.new_operate_array.push({ data: "" })
 }
 
 function merge_operate_input() {
@@ -88,6 +69,7 @@ function merge_operate_input() {
         msg += ';'
     }
     console.log("operate:" + msg)
+    return msg
 }
 
 // tips栏
@@ -99,7 +81,7 @@ function delete_tips_input(item) {
 }
 
 function add_tips_input() {
-    this.new_tips_array.push({ data:"" })
+    this.new_tips_array.push({ data: "" })
 }
 
 function merge_tips_input() {
@@ -108,56 +90,39 @@ function merge_tips_input() {
         msg += m.data;
         msg += ';'
     }
-    console.log("operate:" + msg)
+    console.log("tips:" + msg)
+    return msg
 }
 
 // 提交
 function post_button() {
-    merge_material()
-    merge_operate_input()
+    let [material, quantity] = merge_material()
+    let operate = merge_operate_input()
+    let tips = merge_tips_input()
+    console.log("button:" + new_name.value, material, quantity, operate, tips)
+    const new_dish = reactive({
+        "name": new_name,
+        "material": material,
+        "quantity": quantity,
+        "operate": operate,
+        "tips": tips
+    })
 
+    function submit_dish() {
+        axios.post(test_url.value, new_dish).then(function (res) {
+            console.log(res)
+        })
+
+    }
 }
 </script>
 
 <template>
-    <form class="add" :action="test_url" method="post">
-        <div class="name">
-            <label for="name" class="name">输入名字：</label>
-            <input type="text" class="name" v-model="new_name">
-            <p>{{ new_name }}</p>
-        </div>
-
-        <div class="material">
-            <label for="material" class="material">输入材料，不同材料以分号(;)分隔：</label>
-            <input type="text" class="material" v-model="new_material">
-            <p>{{ new_material }}</p>
-        </div>
-
-        <div class="quantity">
-            <label for="quantity" class="quantity">输入数量，以分号(;)分隔：</label>
-            <input type="text" class="quantity" v-model="new_quantity">
-            <p>{{ new_quantity }}</p>
-        </div>
-
-        <div class="operate">
-            <label for="operate" class="operate">输入操作步骤，以分号(;)分隔：</label>
-            <input type="text" class="operate" v-model="new_operate">
-            <p>{{ new_operate }}</p>
-        </div>
-
-        <div class="tips">
-            <label for="tips" class="tips">输入注意事项：</label>
-            <input type="text" class="tips" v-model="new_tips">
-            <p>{{ new_tips }}</p>
-        </div>
-
-        <div class="submit">
-            <input type="button" class="submit" value="提交" @click="submit_dish">
-        </div>
-    </form>
-
     <div class="new">
-<<<<<<< HEAD
+        <div class="new_name">
+            <el-input type="input" placeholder="输入菜品名称" v-model="new_name"></el-input>
+        </div>
+
         <div class="material-div">
             <div class="kuangkuang" v-for="item in new_material_and_quantity_array" :key="item.id">
                 <el-input type="input" placeholder="输入所需材料" v-model="item.material_name"></el-input>
@@ -165,12 +130,7 @@ function post_button() {
                 <el-button type="danger" @click="delete_material_input(item)">-</el-button>
             </div>
             <el-button class="add_button" type="primary" @click="add_material_input()">+</el-button>
-            
-=======
-        <div class="material" v-for="item in new_material_array" :key="item.id">
-            <el-input type="input" placeholder="输入所需材料" v-model="item.data" v-myfocus="true"></el-input>
-            <el-button type="danger" @click="delete_material_input(item)">-</el-button>
->>>>>>> 06589f81002c92ee35667473782d21bb89f34f78
+
         </div>
 
         <div class="operate-div">
@@ -189,16 +149,20 @@ function post_button() {
             <el-button type="primary" @click="$event => add_tips_input()">+</el-button>
         </div>
 
-        <el-button type="success" @click="merge_material">提交</el-button>
+        <el-button type="success" @click="post_button">提交</el-button>
     </div>
 </template>
 
 <style>
+.add {
+    display: none;
+}
+
 .new {
     display: flex;
     flex-direction: row;
     border: 2px;
-    
+
 }
 
 .new.material-div {
